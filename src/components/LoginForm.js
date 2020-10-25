@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { View, StyleSheet } from 'react-native';
+import firebase from 'firebase'
+import { StyleSheet, Text } from 'react-native';
 
 // custom components
 import Card from './Card'
@@ -8,7 +9,22 @@ import Button from './Button'
 import Input from './Input'
 
 class LoginForm extends Component {
-    state = { email: '', password: '' }
+    state = { email: '', password: '', error: '' }
+
+    onButtonPress() {
+        const { email, password } = this.state
+
+        this.setState({ error: '' })
+
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .catch(() => {
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .catch(() => {
+                        this.setState({ error: 'Authentication Failed!' })
+                    })
+            })
+    }
+
     render() {
         return (
             <Card>
@@ -29,8 +45,9 @@ class LoginForm extends Component {
                         secureTextEntry
                     />
                 </CardSection>
+                <Text style={styles.errorStyle}>{this.state.error}</Text>
                 <CardSection>
-                    <Button>
+                    <Button onPress={this.onButtonPress(this)}>
                         Log In
                     </Button>
                 </CardSection>
@@ -40,7 +57,11 @@ class LoginForm extends Component {
 }
 
 const styles = StyleSheet.create({
-
+    errorStyle: {
+        fontSize: 20,
+        alignSelf: 'center',
+        color: 'red'
+    }
 })
 
 export default LoginForm;
